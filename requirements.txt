@@ -1,0 +1,10 @@
+flask
+sqlalchemy
+python-dotenv
+email-validator
+pydantic
+python-multipart
+werkzeug
+psycopg2-binary
+Flask-Login
+Flask-Bcrypt
