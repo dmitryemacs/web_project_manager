@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Вход — Проектный менеджер{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white text-center">
+                <h4 class="mb-0">Вход</h4>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{{ url_for('login') }}">
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Пароль</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Войти</button>
+                </form>
+                <hr>
+                <p class="text-center">Ещё нет аккаунта? <a href="{{ url_for('register') }}">Зарегистрироваться</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

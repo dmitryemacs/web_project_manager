@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block title %}Дашборд — Проектный менеджер{% endblock %}
+{% block content %}
+  <div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-3"><div class="card stats-card"><div class="card-body">
+      <h6 class="text-secondary">Проектов</h6><h2 class="fw-bold">{{ stats.projects }}</h2>
+    </div></div></div>
+    <div class="col-sm-6 col-lg-3"><div class="card stats-card"><div class="card-body">
+      <h6 class="text-secondary">Задач</h6><h2 class="fw-bold">{{ stats.tasks }}</h2>
+    </div></div></div>
+    <div class="col-sm-6 col-lg-3"><div class="card stats-card"><div class="card-body">
+      <h6 class="text-secondary">Команд</h6><h2 class="fw-bold">{{ stats.teams }}</h2>
+    </div></div></div>
+    <div class="col-sm-6 col-lg-3"><div class="card stats-card"><div class="card-body">
+      <h6 class="text-secondary">Готово</h6><h2 class="fw-bold">{{ stats.tasks_done }}</h2>
+    </div></div></div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-6">
+      <div class="card h-100 shadow-sm">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <h5 class="m-0">Проекты</h5>
+          <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalProject">Добавить</button>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead><tr><th>#</th><th>Название</th><th>Команда</th><th>Дедлайн</th></tr></thead>
+              <tbody>
+                {% for p in projects %}
+                <tr>
+                  <td>{{ p.project_id }}</td>
+                  <td><a href="{{ url_for('project_detail', project_id=p.project_id) }}">{{ p.name }}</a></td> {# Изменено #}
+                  <td>{{ p.team.name if p.team else '—' }}</td>
+                  <td>{{ p.due_date.strftime('%Y-%m-%d') if p.due_date else '—' }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="card h-100 shadow-sm">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <h5 class="m-0">Задачи</h5>
+          <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#modalTask">Добавить</button>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead>
+                <tr>
+                  <th>#</th><th>Название</th><th>Проект</th><th>Исполнитель</th><th>Приоритет</th><th>Статус</th><th>Готово</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for t in tasks %}
+                <tr>
+                  <td>{{ t.task_id }}</td>
+                  <td><a href="{{ url_for('task_detail', task_id=t.task_id) }}">{{ t.title }}</a></td> {# Изменено #}
+                  <td>{{ t.project.name }}</td>
+                  <td>{{ t.assignee.first_name ~ ' ' ~ t.assignee.last_name if t.assignee else '—' }}</td>
+                  <td>{{ t.priority.name if t.priority else '—' }}</td>
+                  <td>{{ t.status.name if t.status else '—' }}</td>
+                  <td>
+                    <form method="post" action="{{ url_for('toggle_task', task_id=t.task_id) }}">
+                      <button class="btn btn-sm {{ 'btn-outline-success' if t.is_completed else 'btn-outline-secondary' }}">
+                        {{ '✓' if t.is_completed else '—' }}
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modals (остаются без изменений, так как они используются для добавления с дашборда) -->
+  <div class="modal fade" id="modalProject" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <form method="post" action="{{ url_for('add_project') }}">
+          <div class="modal-header"><h5 class="modal-title">Новый проект</h5></div>
+          <div class="modal-body">
+            <div class="mb-2"><input class="form-control" name="name" placeholder="Название" required></div>
+            <div class="mb-2"><textarea class="form-control" name="description" placeholder="Описание"></textarea></div>
+            <div class="mb-2">
+              <select class="form-select" name="team_id">
+                <option value="">— Команда —</option>
+                {% for tm in teams %}
+                  <option value="{{ tm.team_id }}">{{ tm.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-2"><input class="form-control" type="date" name="due_date"></div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Отмена</button>
+            <button class="btn btn-primary" type="submit">Создать</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalTask" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <form method="post" action="{{ url_for('add_task') }}">
+          <div class="modal-header"><h5 class="modal-title">Новая задача</h5></div>
+          <div class="modal-body">
+            <div class="mb-2"><input class="form-control" name="title" placeholder="Название" required></div>
+            <div class="mb-2"><textarea class="form-control" name="description" placeholder="Описание"></textarea></div>
+            <div class="mb-2">
+              <select class="form-select" name="project_id" required>
+                {% for p in projects %}
+                  <option value="{{ p.project_id }}">{{ p.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-2">
+              <select class="form-select" name="assignee_id">
+                <option value="">— Исполнитель —</option>
+                {% for u in users %}
+                  <option value="{{ u.user_id }}">{{ u.first_name }} {{ u.last_name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-2">
+              <select class="form-select" name="priority_id">
+                <option value="">— Приоритет —</option>
+                {% for pr in priorities %}
+                  <option value="{{ pr.priority_id }}">{{ pr.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-2">
+              <select class="form-select" name="status_id">
+                <option value="">— Статус —</option>
+                {% for st in statuses %}
+                  <option value="{{ st.status_id }}">{{ st.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-2"><input class="form-control" type="date" name="due_date"></div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Отмена</button>
+            <button class="btn btn-success" type="submit">Создать</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}

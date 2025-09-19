@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Регистрация — Проектный менеджер{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white text-center">
+                <h4 class="mb-0">Регистрация</h4>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{{ url_for('register') }}">
+                    <div class="mb-3">
+                        <label for="first_name" class="form-label">Имя</label>
+                        <input type="text" class="form-control" id="first_name" name="first_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="last_name" class="form-label">Фамилия</label>
+                        <input type="text" class="form-control" id="last_name" name="last_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Пароль</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">Зарегистрироваться</button>
+                </form>
+                <hr>
+                <p class="text-center">Уже есть аккаунт? <a href="{{ url_for('login') }}">Войти</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

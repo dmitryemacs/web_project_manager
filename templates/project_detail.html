@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Проект: {{ project.name }} — Проектный менеджер{% endblock %}
+{% block content %}
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Дашборд</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{ project.name }}</li>
+    </ol>
+  </nav>
+
+  <div class="card shadow-sm mb-4">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+      <h4 class="mb-0">{{ project.name }}</h4>
+      <div>
+        {# Здесь будут кнопки редактирования/удаления проекта #}
+        <button class="btn btn-sm btn-outline-secondary me-2">Редактировать</button>
+        <button class="btn btn-sm btn-outline-danger">Удалить</button>
+      </div>
+    </div>
+    <div class="card-body">
+      <p><strong>Описание:</strong> {{ project.description if project.description else 'Нет описания' }}</p>
+      <p><strong>Команда:</strong> {{ project.team.name if project.team else 'Не назначена' }}</p>
+      <p><strong>Дедлайн:</strong> {{ project.due_date.strftime('%Y-%m-%d') if project.due_date else 'Не указан' }}</p>
+    </div>
+  </div>
+
+  <div class="card shadow-sm mb-4">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">Задачи проекта</h5>
+      <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#modalTask">Добавить задачу</button>
+    </div>
+    <div class="card-body">
+      {% if tasks %}
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead>
+            <tr>
+              <th>#</th><th>Название</th><th>Исполнитель</th><th>Приоритет</th><th>Статус</th><th>Готово</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for t in tasks %}
+            <tr>
+              <td>{{ t.task_id }}</td>
+              <td><a href="{{ url_for('task_detail', task_id=t.task_id) }}">{{ t.title }}</a></td>
+              <td>{{ t.assignee.first_name ~ ' ' ~ t.assignee.last_name if t.assignee else '—' }}</td>
+              <td>{{ t.priority.name if t.priority else '—' }}</td>
+              <td>{{ t.status.name if t.status else '—' }}</td>
+              <td>
+                <form method="post" action="{{ url_for('toggle_task', task_id=t.task_id) }}">
+                  <button class="btn btn-sm {{ 'btn-outline-success' if t.is_completed else 'btn-outline-secondary' }}">
+                    {{ '✓' if t.is_completed else '—' }}
+                  </button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="text-muted">В этом проекте пока нет задач.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Modal for adding a new task (similar to index.html, but with project_id pre-selected) -->
+  <div class="modal fade" id="modalTask" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <form method="post" action="{{ url_for('add_task') }}">
+          <div class="modal-header"><h5 class="modal-title">Новая задача для {{ project.name }}</h5></div>
+          <div class="modal-body">
+            <input type="hidden" name="project_id" value="{{ project.project_id }}"> {# Project ID is hidden and pre-filled #}
+            <div class="mb-2"><input class="form-control" name="title" placeholder="Название" required></div>
+            <div class="mb-2"><textarea class="form-control" name="description" placeholder="Описание"></textarea></div>
+            <div class="mb-2">
+              <select class="form-select" name="assignee_id">
+                <option value="">— Исполнитель —</option>
+                {% for u in users %}
+                  <option value="{{ u.user_id }}">{{ u.first_name }} {{ u.last_name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-2">
+              <select class="form-select" name="priority_id">
+                <option value="">— Приоритет —</option>
+                {% for pr in priorities %}
+                  <option value="{{ pr.priority_id }}">{{ pr.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-2">
+              <select class="form-select" name="status_id">
+                <option value="">— Статус —</option>
+                {% for st in statuses %}
+                  <option value="{{ st.status_id }}">{{ st.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-2"><input class="form-control" type="date" name="due_date"></div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Отмена</button>
+            <button class="btn btn-success" type="submit">Создать</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}

@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Задача: {{ task.title }} — Проектный менеджер{% endblock %}
+{% block content %}
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Дашборд</a></li>
+      <li class="breadcrumb-item"><a href="{{ url_for('project_detail', project_id=task.project.project_id) }}">{{ task.project.name }}</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{ task.title }}</li>
+    </ol>
+  </nav>
+
+  <div class="card shadow-sm mb-4">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+      <h4 class="mb-0">{{ task.title }}</h4>
+      <div>
+        <form method="post" action="{{ url_for('toggle_task', task_id=task.task_id) }}" class="d-inline me-2">
+          <button class="btn btn-sm {{ 'btn-success' if task.is_completed else 'btn-warning' }}">
+            {{ 'Завершено' if task.is_completed else 'В работе' }}
+          </button>
+        </form>
+        {# Здесь будут кнопки редактирования/удаления задачи #}
+        <button class="btn btn-sm btn-outline-secondary me-2">Редактировать</button>
+        <button class="btn btn-sm btn-outline-danger">Удалить</button>
+      </div>
+    </div>
+    <div class="card-body">
+      <p><strong>Описание:</strong> {{ task.description if task.description else 'Нет описания' }}</p>
+      <p><strong>Проект:</strong> <a href="{{ url_for('project_detail', project_id=task.project.project_id) }}">{{ task.project.name }}</a></p>
+      <p><strong>Исполнитель:</strong> {{ task.assignee.first_name ~ ' ' ~ task.assignee.last_name if task.assignee else 'Не назначен' }}</p>
+      <p><strong>Приоритет:</strong> {{ task.priority.name if task.priority else 'Не указан' }}</p>
+      <p><strong>Статус:</strong> {{ task.status.name if task.status else 'Не указан' }}</p>
+      <p><strong>Дедлайн:</strong> {{ task.due_date.strftime('%Y-%m-%d') if task.due_date else 'Не указан' }}</p>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Комментарии</h5>
+        </div>
+        <div class="card-body">
+          <div class="comments-list mb-3">
+            {% if comments %}
+              {% for comment in comments %}
+                <div class="card mb-2 bg-light">
+                  <div class="card-body p-2">
+                    <small class="text-muted">{{ comment.user.first_name }} {{ comment.user.last_name }} в {{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                    <p class="mb-0">{{ comment.content }}</p>
+                  </div>
+                </div>
+              {% endfor %}
+            {% else %}
+              <p class="text-muted">Пока нет комментариев.</p>
+            {% endif %}
+          </div>
+          <form method="post" action="{{ url_for('add_comment') }}">
+            <input type="hidden" name="task_id" value="{{ task.task_id }}">
+            <div class="input-group">
+              <textarea class="form-control" name="content" placeholder="Ваш комментарий..." required rows="2"></textarea>
+              <button class="btn btn-primary" type="submit">Отправить</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Вложения</h5>
+        </div>
+        <div class="card-body">
+          <ul class="list-group list-group-flush mb-3">
+            {% if attachments %}
+              {% for attachment in attachments %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <a href="{{ url_for('serve_file', filename=attachment.file_path.split('/')[-1]) }}" target="_blank">
+                    <i class="bi bi-file-earmark"></i> {{ attachment.file_path.split('/')[-1] }}
+                  </a>
+                  <small class="text-muted">{{ attachment.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                  {# Здесь можно добавить кнопку удаления вложения #}
+                </li>
+              {% endfor %}
+            {% else %}
+              <p class="text-muted">Пока нет вложений.</p>
+            {% endif %}
+          </ul>
+          <form method="post" action="{{ url_for('upload_attachment') }}" enctype="multipart/form-data">
+            <input type="hidden" name="task_id" value="{{ task.task_id }}">
+            <div class="input-group">
+              <input type="file" class="form-control" name="file" required>
+              <button class="btn btn-primary" type="submit">Загрузить</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
