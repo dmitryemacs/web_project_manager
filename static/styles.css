@@ -1,0 +1,9 @@
+
+.stats-card {
+  border: 0;
+  border-radius: 1rem;
+  box-shadow: 0 0.35rem 1rem rgba(0,0,0,0.08);
+}
+.table thead th {
+  font-weight: 600;
+}
